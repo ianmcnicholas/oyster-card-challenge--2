@@ -45,12 +45,19 @@ describe Oystercard do
     it "should throw an error if there is not enough money on the card to pay fare" do
       oystercard = Oystercard.new
       oystercard.top_up(1)
-      expect { oystercard.deduct(2) }.to raise_error "You do not have enough money on your card for this fare"
+      expect { oystercard.deduct(2) }.to raise_error "You do not have enough money on your card for this journey"
     end
   end
 
   it "should respond to touch_in" do
     expect(subject).to respond_to(:touch_in)
+  end
+
+  describe "#touch_in" do
+    it "should throw an error when touch_in is called and balance is less than the minimum required" do
+      oystercard = Oystercard.new
+      expect { oystercard.touch_in }.to raise_error "You do not have enough money on your card for this journey"
+    end
   end
 
   it "should respond to touch_out" do
@@ -64,12 +71,14 @@ describe Oystercard do
   describe "#in_journey" do
     it "expects a user to be in a journey after they have touched in" do
       oystercard = Oystercard.new
+      oystercard.top_up(Oystercard::Min_Balance)
       oystercard.touch_in
       expect(oystercard).to be_in_journey
     end
 
     it "expects a user to not be in a journey if they have touched out" do
       oystercard = Oystercard.new
+      oystercard.top_up(Oystercard::Min_Balance)
       oystercard.touch_in
       oystercard.touch_out
       expect(oystercard).not_to be_in_journey
